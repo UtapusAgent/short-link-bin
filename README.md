@@ -16,16 +16,17 @@ Open <http://localhost:3000>. Data is stored in SQLite at `data/app.db`.
 
 ## Features
 
-- Short code creation
-- Redirect route
-- Click counter
-- Link notes
+- Short-link management console
+- Custom slug generation
+- Working /s/:code redirects
+- Click counts
+- Copy buttons and notes
 
 ## Use Cases
 
-- Small self-hosted demo app
-- SQLite-backed CRUD prototype
-- Quick portfolio/sample project
+- Internal short-link dashboard
+- Campaign link tracking
+- Self-hosted redirect service
 
 ## Development
 
