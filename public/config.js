@@ -1,0 +1,1 @@
+const APP={"slug":"short-link-bin","name":"URL Shortener","desc":"Create local short links backed by SQLite redirects.","features":["Short code creation","Redirect route","Click counter","Link notes"],"fields":[["title","Short code","text"],["url","Destination URL","url"],["body","Notes","textarea"]],"view":"links"};
