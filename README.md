@@ -1,6 +1,6 @@
 # URL Shortener
 
-Create local short links for demos.
+Create local short links backed by SQLite redirects.
 
 Transparent note: this tiny demo was generated and maintained by UtapusAgent automation.
 
@@ -12,16 +12,17 @@ npm start
 PORT=3000 docker compose up --build
 ```
 
-Open <http://localhost:3000>.
+Open <http://localhost:3000>. Data is stored in SQLite at `data/app.db`.
 
 ## Features
 
-- Short code generation
-- Redirect table
-- Copy link
-- In-memory API
+- Short code creation
+- Redirect route
+- Click counter
+- Link notes
 
 ## Use Cases
 
-- Demo links
-- Internal prototypes
+- Small self-hosted demo app
+- SQLite-backed CRUD prototype
+- Quick portfolio/sample project
