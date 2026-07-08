@@ -1,6 +1,7 @@
 const $ = (selector) => document.querySelector(selector);
 
 let links = [];
+let editingId = null;
 
 function escapeHtml(value) {
   return String(value ?? "").replace(/[&<>"']/g, (char) => ({
@@ -32,18 +33,19 @@ function shortUrl(code) {
 
 function render() {
   const totalClicks = links.reduce((sum, link) => sum + Number(link.meta?.clicks || 0), 0);
+  const editing = links.find((link) => link.id === editingId);
   $("#app").innerHTML = `
     <section class="shortener-layout">
       <aside class="panel">
-        <h2>Create Link</h2>
+        <h2>${editing ? "Edit Link" : "Create Link"}</h2>
         <form id="linkForm">
           <label>Destination URL</label>
-          <input id="url" type="url" placeholder="https://example.com/long/path" required>
+          <input id="url" type="url" placeholder="https://example.com/long/path" required value="${escapeHtml(editing?.meta?.url || "")}">
           <label>Short code</label>
-          <input id="code" placeholder="custom-code">
+          <input id="code" placeholder="custom-code" value="${escapeHtml(editing?.title || "")}">
           <label>Notes</label>
-          <textarea id="notes" placeholder="Campaign, audience, expiration notes..."></textarea>
-          <button>Create short link</button>
+          <textarea id="notes" placeholder="Campaign, audience, expiration notes...">${escapeHtml(editing?.body || "")}</textarea>
+          <div class="row"><button>${editing ? "Save link" : "Create short link"}</button>${editing ? `<button type="button" class="ghost" id="cancelEdit">Cancel</button>` : ""}</div>
         </form>
       </aside>
       <section>
@@ -68,6 +70,7 @@ function render() {
                   <td class="right">${Number(link.meta?.clicks || 0)}</td>
                   <td class="actions">
                     <button onclick="copyLink('${escapeHtml(link.title)}')">Copy</button>
+                    <button class="ghost" onclick="editLink(${link.id})">Edit</button>
                     <button class="danger" onclick="deleteLink(${link.id})">Delete</button>
                   </td>
                 </tr>
@@ -82,7 +85,9 @@ function render() {
 }
 
 function bindEvents() {
-  $("#linkForm").addEventListener("submit", createLink);
+  $("#linkForm").addEventListener("submit", saveLink);
+  const cancel = $("#cancelEdit");
+  if (cancel) cancel.addEventListener("click", () => { editingId = null; render(); });
   $("#url").addEventListener("input", () => {
     if (!$("#code").dataset.touched) $("#code").value = slugify($("#url").value);
   });
@@ -92,24 +97,28 @@ function bindEvents() {
   });
 }
 
-async function createLink(event) {
+async function saveLink(event) {
   event.preventDefault();
   const url = $("#url").value.trim();
   const code = slugify($("#code").value || url);
-  if (links.some((link) => link.title === code)) {
+  if (links.some((link) => link.title === code && link.id !== editingId)) {
     alert("That short code already exists.");
     return;
   }
-  await api("/api/items", {
-    method: "POST",
-    body: JSON.stringify({
-      title: code,
-      body: $("#notes").value.trim(),
-      status: "active",
-      meta: { url, clicks: 0 },
-    }),
-  });
+  const payload = { title: code, body: $("#notes").value.trim(), status: "active", meta: { url, clicks: 0 } };
+  if (editingId) {
+    const old = links.find((link) => link.id === editingId);
+    await api(`/api/items/${editingId}`, { method: "PUT", body: JSON.stringify({ ...old, ...payload, meta: { ...payload.meta, clicks: old.meta?.clicks || 0 }, id: editingId }) });
+    editingId = null;
+  } else {
+    await api("/api/items", { method: "POST", body: JSON.stringify(payload) });
+  }
   await loadLinks();
+}
+
+function editLink(id) {
+  editingId = id;
+  render();
 }
 
 async function copyLink(code) {
@@ -140,5 +149,6 @@ document.body.innerHTML = `
 `;
 
 loadLinks();
+window.editLink = editLink;
 window.copyLink = copyLink;
 window.deleteLink = deleteLink;
