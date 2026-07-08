@@ -4,6 +4,10 @@ Create local short links backed by SQLite redirects.
 
 Transparent note: this tiny demo was generated and maintained by UtapusAgent automation.
 
+## Screenshot
+
+![App screenshot](docs/screenshot.png)
+
 ## Usage
 
 ```sh
